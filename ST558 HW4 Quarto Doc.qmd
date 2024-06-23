@@ -1,0 +1,333 @@
+---
+title: "ST558 HW #4 Liam Flaherty"
+author: "Liam Flaherty"
+format: html
+editor: visual
+---
+
+# ST558 HW4: Liam Flaherty
+
+## Task 1: Conceptual Questions
+
+### Task 1, Question 1
+
+1.  What is the purpose of the `lapply()` function? What is the equivalent `purrr` function?
+
+> The function `lapply` is essentially the `apply()` function for lists. It takes in a list and applies a function to each list element. The equivalent `purrr` function is `map`.
+
+### Task 1, Question 2
+
+2.  Suppose we have a list called `my_list`. Each element of the list is a numeric data frame (all columns are numeric). We want to use `lapply()` to run the code `cor(numeric_matrix, method = "kendall")` on each element of the list. Write code to do this.
+
+> We can run the code `lapply(my_list, function(x) cor(x, method="kendall"))`. The below code chunk checks that this works on some sample data.
+
+```{r}
+set.seed(558)
+my_list=list(
+  df1=data.frame(runif(5), rnorm(5)),
+  df2=data.frame(rnorm(6), runif(6)))
+
+a=lapply(my_list, function(x) cor(x, method="kendall"))
+
+a
+all.equal(cor(my_list[[1]], method="kendall"), a[[1]])
+all.equal(cor(my_list[[2]], method="kendall"), a[[2]])
+rm(a, my_list)
+```
+
+### Task 1, Question 3
+
+3.  What are two advantages of using `purrr` functions instead of the `BaseR` apply family?
+
+> The functions in the `purrr` packages are a bit slower than their counterparts in `BaseR`, but as a tradeoff, the formatting is more uniform and the syntax more clear. Additionally, helper functions like `pluck()` from the `purrr` library might make the overall code more efficient and readable.
+
+### Task 1, Question 4
+
+4.  What is a side-effect function?
+
+> A side-effect function is a function that doesn't actually try to change the data, but just produces something. For example, `print()` and `plot()` are side-effect functions, in contrast to things like `select()` and `mutate()` from the `tidyverse`, which are transformation functions.
+
+### Task 1, Question 5
+
+5.  Why can you name a variable `sd` in a function and not cause any issues with the `sd` function?
+
+> R creates a temporary function environment each time your function is called. Once the function is run, this environment is then removed, so any variables defined within the function will not be in the global environment and will be inaccessible. Of note is that R pursues it's normal environment search even within the function. For example, if an object `y` is defined prior to writing a function, and then a new variable `y` is declared inside the function, the function will work with the second `y`, and the first `y` will still be accessible in the global environment after the function is called. However if `y` is used inside the function without a new `y` being specified, the function will use the `y` stored in memory when it is called.
+
+## Task 2: Writing R Functions
+
+### Task 2, Question 1
+
+We would like to create a user-defined function (udf) to get the Root Mean Square Error (RMSE) of two vectors. We name our function `getRMSE()` whose two inputs are vectors of the same length (there is nothing to predict if there isn't actually a response). Note further that the order of the function inputs are irrelevant since the difference between the response and predicted values (i.e. the residuals) are being squared. We add in an unnamed argument with `...` that allows users to pass along a function to the mean function used within `getRMSE`. This is particularly useful since R cannot calculate the mean of a vector with missing values, but can if users specify to remove the missing values first. For example, if `v` is a vector with missing values, `mean(v)` would return an `NA` while `mean(v, na.rm=TRUE)` would return the mean of the non-NA values.
+
+```{r}
+getRMSE=function(response,predict, ...) {
+  sqrt(
+    mean( (response-predict)^2, ...))
+}
+```
+
+### Task 2, Question 2
+
+We now test our above `getRMSE()` function on some data. Notice that our response is a linear function of some covariate $x$-- we would expect our response and predictor to be linked.
+
+```{r}
+set.seed(10)
+n=100
+x=runif(n)
+resp=3+10*x+rnorm(n)
+pred=predict(lm(resp~x), data.frame(x))
+
+getRMSE(resp, pred)
+```
+
+We can also test the function against data with missing values. To do so, we remove the first two elements of our `resp` vector and create a new vector of predictions based on this vector.
+
+```{r}
+miss=NA_real_
+number=2
+
+missing_resp=c(rep(miss, number), resp[(number+1):length(resp)])
+missing_pred=predict(lm(missing_resp~x), data.frame(x))
+
+head(missing_resp)
+```
+
+We then pass these values into our `getRMSE()` function. When the user doesn't specify `na.rm=TRUE`, they get an `NA`-- R can't calculate the mean of data with `NA`s.
+
+```{r}
+getRMSE(missing_resp, missing_pred)
+```
+
+But if the user does specify `na.rm=TRUE` in the `RMSE()` function, it works as expected.
+
+```{r}
+getRMSE(missing_resp, missing_pred, na.rm=TRUE)
+```
+
+### Task 2, Question 3
+
+What if instead we wanted to explore the Mean *Absolute* Error (MAE)? We could create a similar function to our `getRMSE()`. The same notes we had about RMSE apply here-- order of function inputs doesn't matter, and inputs must be vectors of the same length.
+
+```{r}
+getMAE=function(response, predict,...) {
+  mean( abs(response-predict), ...)
+}
+
+```
+
+### Task 2, Question 4
+
+We check our `getMAE` function against the same data we had tested earlier.
+
+```{r}
+set.seed(10)
+n=100
+x=runif(n)
+resp=3+10*x+rnorm(n)
+pred=predict(lm(resp~x), data.frame(x))
+
+getMAE(resp, pred)
+```
+
+Just like before, we want to see that the function works with missing values. We again replace a couple values with `NA`s and rerun our regression.
+
+```{r}
+miss=NA_real_
+number=2
+
+missing_resp=c(rep(miss, number), resp[(number+1):length(resp)])
+missing_pred=predict(lm(missing_resp~x), data.frame(x))
+head(missing_resp)
+```
+
+Again we see that when users fail to pass on a `na.rm=TRUE`, the function errors, but otherwise works as expected.
+
+```{r}
+getMAE(missing_resp, missing_pred)
+getMAE(missing_resp, missing_pred, na.rm=TRUE)
+```
+
+### Task 2, Question 5
+
+We would like a user to be able to easily specify which of these measures they'd like to see. We wrap our previous function in a single function `function_predict_eval()` which takes as inputs two equal length numeric vectors along with a user specified string indicating which measure they'd like to return. Our `function_predict_eval()` returns both the RMSE and MAE by default, but the user can specify the string `"MAE"` after inputting their response and prediction vectors if they'd only like to see that measurement (the same applies for inputting the string `"RMSE"`). Just like in our `getRMSE()` and `getMAE()` functions, we add unnamed functions with `...` (mainly so the user has the option to specify `na.rm=TRUE` if they know their vectors have missing data). Note that before any calculations are performed, we first test that the inputs to the function are as desired. If they aren't, we immediately exit the function by `return()`ing an error message to the user.
+
+```{r}
+function_predict_eval=function(response, predict, default_measure="both",...) {
+  
+  if(is.vector(predict)+is.vector(response)+
+     is.numeric(predict)+is.numeric(response)+
+     is.atomic(predict)+is.atomic(response)!= 6) {
+    return("ERROR, CHECK INPUTS")
+  } else {
+     df=data.frame(
+      RMSE=getRMSE(response, predict,...), 
+      MAE=getMAE(response, predict,...))
+  }
+  
+  if(default_measure=="RMSE") {
+    df[,"RMSE"]
+  } else if (default_measure=="MAE") {
+    df[,"MAE"]
+  } else if (default_measure=="both") {
+    df
+  } else {
+    "ERROR, CHECK INPUTS"
+  }
+}
+```
+
+### Task 2, Question 6
+
+We want to test our wrapper function against the same data we've looked at before. Our responses and predicted values are given by the below.
+
+```{r}
+set.seed(10)
+n=100
+x=runif(n)
+resp=3+10*x+rnorm(n)
+pred=predict(lm(resp~x), data.frame(x))
+head(resp)
+```
+
+In turn, we use this data and our `function_predict_eval()` function to return the RMSE, the MAE, and both metrics.
+
+```{r}
+function_predict_eval(resp, pred, "RMSE")
+function_predict_eval(resp, pred, "MAE")
+function_predict_eval(resp, pred)
+```
+
+All three of these function calls match our previous values. We also want to make sure wrapper function works with missing data. We replace two prediction values with NA's like we did previously.
+
+```{r}
+miss=NA_real_
+number=2
+
+missing_resp=c(rep(miss, number), resp[(number+1):length(resp)])
+missing_pred=predict(lm(missing_resp~x), data.frame(x))
+head(missing_resp)
+```
+
+In each case, specifying our unnamed argument to be `na.rm=TRUE` handles our data, while leaving it unspecified returns `NA`, as desired.
+
+```{r}
+function_predict_eval(missing_resp, missing_pred, "RMSE")
+function_predict_eval(missing_resp, missing_pred, "RMSE", na.rm=TRUE)
+function_predict_eval(missing_resp, missing_pred, "MAE")
+function_predict_eval(missing_resp, missing_pred, "MAE", na.rm=TRUE)
+function_predict_eval(missing_resp, missing_pred)
+function_predict_eval(missing_resp, missing_pred,na.rm=TRUE)
+
+```
+
+We'd finally like to check that the our `function_predict_eval()` function can handle input errors. We pass it in a singe data frame instead of two vectors, and see that it does.
+
+```{r}
+df=data.frame(resp, pred)
+function_predict_eval(df, "RMSE")
+```
+
+## Task 3: Querying An API And A Tidy-Style Function
+
+For all the below questions, we query the Application Programming Interface (API) available at <https://newsapi.org>. Since we're dealing with API's, we load in the `httr` package.
+
+### Task 3, Question 1
+
+The documentation provided in <https://newsapi.org/docs> gives information on how to build our url. We want to research articles on baseball over the last few days, so fill out our url accordingly. Note that the API key we provided came from a free trial with the site.
+
+```{r}
+library(httr)
+
+topic="baseball"
+key="78a2743e6eb946c99d808fc82ec2fed6"
+start_date="2024-06-20"
+end_date="2024-06-21"
+sort="popularity"
+
+my_url=paste0("https://newsapi.org/v2/everything?", 
+           "q=", topic, 
+           "&from=", start_date,
+           "&to=", end_date,
+           "&sortBy=", sort,
+           "&apiKey=", key)
+
+api_return=GET(my_url)          #GET is from httr package#
+
+str(api_return, max.level=1)    #glimpse of what the API returns#
+```
+
+### Task 3, Question 2
+
+We can use the `jsonlite` package to convert the JavaScript Object Notation (JSON) data returned by the API into something more easily readable. Upon inspecting the element of our new object `plaintext`, we see that we got 508 articles, which we can access through the third list item, a data frame called `articles`.
+
+```{r}
+library(jsonlite)
+
+plaintext=fromJSON(rawToChar(api_return$content))
+
+str(plaintext, max.level=1)
+```
+
+Summarizing our data frame, we see a few different variables
+
+```{r}
+news_articles=plaintext$articles
+summary(news_articles)
+```
+
+We can pick out a few items of interest using normal `baseR` operations, and then use an anonymous function within `apply()` to make our output manageable.
+
+```{r}
+reduced=as.data.frame(apply(
+  news_articles[,c("url", "author", "title")], 
+  2, 
+  function(x) substr(x,1,30)))
+
+head(reduced)
+```
+
+We can even read the contents of the articles with the `content` column in our original `news_articles` data frame!
+
+```{r}
+news_articles$content[1]         #Say Hey! RIP to an all-timer. Only Babe is higher on my GOAT list#
+```
+
+### Task 3, Question 3
+
+We would not like to write a function that allows us to easily query this API. Putting our previous steps together, we have the below.
+
+```{r}
+function_api_query=function(subject, time, key) {
+  
+  my_url=paste0("https://newsapi.org/v2/everything?", 
+           "q=", subject, 
+           "&from=", time,
+           "&apiKey=", key)
+  
+  api_return=GET(my_url)
+  plaintext=fromJSON(rawToChar(api_return$content))
+  a=plaintext$articles
+  b=a[,c("url", "author", "title", "content")]
+  
+  
+  return(b)
+}
+```
+
+We can run this function on two topics of interest, say baseball and the Olympic trials.
+
+```{r}
+topic1="baseball"
+topic2="1500m"
+
+date1="2024-06-20"
+date2="2024-06-18"
+
+key="78a2743e6eb946c99d808fc82ec2fed6"
+
+baseball_articles=function_api_query(topic1, date1, key)
+olympic_articles=function_api_query(topic2, date2, key)
+
+head(baseball_articles[,c("author", "title")])
+head(olympic_articles[,c("author", "title")])
+```
