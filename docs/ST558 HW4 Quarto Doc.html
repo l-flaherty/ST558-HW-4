@@ -253,7 +253,7 @@ runif.6. 0.06666667 1.00000000</code></pre>
 <h2 class="anchored" data-anchor-id="task-2-writing-r-functions">Task 2: Writing R Functions</h2>
 <section id="task-2-question-1" class="level3">
 <h3 class="anchored" data-anchor-id="task-2-question-1">Task 2, Question 1</h3>
-<p>We would like to create a user-defined function (udf) to get the Root Mean Square Error (RMSE) of two vectors. We name our function <code>getRMSE()</code> whose two inputs are vectors of the same length (there is nothing to predict if there isn’t actually a response). Note further that the order of the function inputs are irrelevant since the difference between the response and predicted values (i.e.&nbsp;the residuals) are being squared. We add in an unnamed argument with <code>...</code> that allows users to pass along a function to the mean function used within <code>getRMSE</code>. This is particularly useful since R cannot calculate the mean of a vector with missing values, but can if users specify to remove the missing values first. For example, if <code>v</code> is a vector with missing values, <code>mean(v)</code> would return an <code>NA</code> while <code>mean(v, na.rm=TRUE)</code> would return the mean of the non-NA values.</p>
+<p>We would like to create a user-defined function (udf) to get the Root Mean Square Error (RMSE) of two vectors. We name our function <code>getRMSE()</code> whose two inputs are vectors of the same length (there is nothing to predict if there isn’t actually a response). Note further that the order of the function inputs are irrelevant since the difference between the response and predicted values (i.e.&nbsp;the residuals) are being squared. We add in an unnamed argument with <code>...</code> that allows users to pass along an argument to the mean function used within <code>getRMSE</code>. This is particularly useful since R cannot calculate the mean of a vector with missing values, but can if users specify to remove the missing values first. For example, if <code>v</code> is a vector with missing values, <code>mean(v)</code> would return an <code>NA</code> while <code>mean(v, na.rm=TRUE)</code> would return the mean of the non-NA values.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>getRMSE<span class="ot">=</span><span class="cf">function</span>(response,predict, ...) {</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>(</span>
@@ -410,7 +410,7 @@ runif.6. 0.06666667 1.00000000</code></pre>
 1 0.9581677 0.8155776</code></pre>
 </div>
 </div>
-<p>All three of these function calls match our previous values. We also want to make sure wrapper function works with missing data. We replace two prediction values with NA’s like we did previously.</p>
+<p>All three of these function calls match our previous values. We also want to make sure our wrapper function works with missing data. We replace two prediction values with <code>NA</code>s like we did previously.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>miss<span class="ot">=</span><span class="cn">NA_real_</span></span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>number<span class="ot">=</span><span class="dv">2</span></span>
@@ -495,8 +495,8 @@ runif.6. 0.06666667 1.00000000</code></pre>
  $ all_headers:List of 1
  $ cookies    :'data.frame':    0 obs. of  7 variables:
  $ content    : raw [1:80781] 7b 22 73 74 ...
- $ date       : POSIXct[1:1], format: "2024-06-23 02:49:26"
- $ times      : Named num [1:6] 0 0.00724 0.0448 0.07242 0.19289 ...
+ $ date       : POSIXct[1:1], format: "2024-06-23 03:31:10"
+ $ times      : Named num [1:6] 0 0.00466 0.02489 0.05225 0.16343 ...
   ..- attr(*, "names")= chr [1:6] "redirect" "namelookup" "connect" "pretransfer" ...
  $ request    :List of 7
   ..- attr(*, "class")= chr "request"
@@ -507,7 +507,7 @@ runif.6. 0.06666667 1.00000000</code></pre>
 </section>
 <section id="task-3-question-2" class="level3">
 <h3 class="anchored" data-anchor-id="task-3-question-2">Task 3, Question 2</h3>
-<p>We can use the <code>jsonlite</code> package to convert the JavaScript Object Notation (JSON) data returned by the API into something more easily readable. Upon inspecting the element of our new object <code>plaintext</code>, we see that we got 508 articles, which we can access through the third list item, a data frame called <code>articles</code>.</p>
+<p>We can use the <code>jsonlite</code> package to convert the JavaScript Object Notation (JSON) data returned by the API into something more easily readable. Upon inspecting the element of our new object <code>plaintext</code>, we see that we got 512 articles, which we can access through the third list item, a data frame called <code>articles</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -521,7 +521,7 @@ runif.6. 0.06666667 1.00000000</code></pre>
  $ articles    :'data.frame':   100 obs. of  8 variables:</code></pre>
 </div>
 </div>
-<p>Summarizing our data frame, we see a few different variables</p>
+<p>Summarizing our data frame, we see a few different variables.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>news_articles<span class="ot">=</span>plaintext<span class="sc">$</span>articles</span>
 <span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(news_articles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -575,7 +575,7 @@ runif.6. 0.06666667 1.00000000</code></pre>
 </section>
 <section id="task-3-question-3" class="level3">
 <h3 class="anchored" data-anchor-id="task-3-question-3">Task 3, Question 3</h3>
-<p>We would not like to write a function that allows us to easily query this API. Putting our previous steps together, we have the below.</p>
+<p>We would now like to write a function that allows us to easily query this API. Putting our previous steps together, we have the below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>function_api_query<span class="ot">=</span><span class="cf">function</span>(subject, time, key) {</span>
 <span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>  </span>
@@ -589,9 +589,8 @@ runif.6. 0.06666667 1.00000000</code></pre>
 <span id="cb61-10"><a href="#cb61-10" aria-hidden="true" tabindex="-1"></a>  a<span class="ot">=</span>plaintext<span class="sc">$</span>articles</span>
 <span id="cb61-11"><a href="#cb61-11" aria-hidden="true" tabindex="-1"></a>  b<span class="ot">=</span>a[,<span class="fu">c</span>(<span class="st">"url"</span>, <span class="st">"author"</span>, <span class="st">"title"</span>, <span class="st">"content"</span>)]</span>
 <span id="cb61-12"><a href="#cb61-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(b)</span>
-<span id="cb61-15"><a href="#cb61-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb61-13"><a href="#cb61-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(b)</span>
+<span id="cb61-14"><a href="#cb61-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can run this function on two topics of interest, say baseball and the Olympic trials.</p>
 <div class="cell">

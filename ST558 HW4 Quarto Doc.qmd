@@ -13,7 +13,7 @@ editor: visual
 
 1.  What is the purpose of the `lapply()` function? What is the equivalent `purrr` function?
 
-> The function `lapply` is essentially the `apply()` function for lists. It takes in a list and applies a function to each list element. The equivalent `purrr` function is `map`.
+> The function `lapply()` is essentially the `apply()` function for lists. It takes in a list and applies a function to each list element. The equivalent `purrr` function is `map`.
 
 ### Task 1, Question 2
 
