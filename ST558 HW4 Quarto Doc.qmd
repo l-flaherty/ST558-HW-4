@@ -57,7 +57,7 @@ rm(a, my_list)
 
 ### Task 2, Question 1
 
-We would like to create a user-defined function (udf) to get the Root Mean Square Error (RMSE) of two vectors. We name our function `getRMSE()` whose two inputs are vectors of the same length (there is nothing to predict if there isn't actually a response). Note further that the order of the function inputs are irrelevant since the difference between the response and predicted values (i.e. the residuals) are being squared. We add in an unnamed argument with `...` that allows users to pass along a function to the mean function used within `getRMSE`. This is particularly useful since R cannot calculate the mean of a vector with missing values, but can if users specify to remove the missing values first. For example, if `v` is a vector with missing values, `mean(v)` would return an `NA` while `mean(v, na.rm=TRUE)` would return the mean of the non-NA values.
+We would like to create a user-defined function (udf) to get the Root Mean Square Error (RMSE) of two vectors. We name our function `getRMSE()` whose two inputs are vectors of the same length (there is nothing to predict if there isn't actually a response). Note further that the order of the function inputs are irrelevant since the difference between the response and predicted values (i.e. the residuals) are being squared. We add in an unnamed argument with `...` that allows users to pass along an argument to the mean function used within `getRMSE`. This is particularly useful since R cannot calculate the mean of a vector with missing values, but can if users specify to remove the missing values first. For example, if `v` is a vector with missing values, `mean(v)` would return an `NA` while `mean(v, na.rm=TRUE)` would return the mean of the non-NA values.
 
 ```{r}
 getRMSE=function(response,predict, ...) {
@@ -197,7 +197,7 @@ function_predict_eval(resp, pred, "MAE")
 function_predict_eval(resp, pred)
 ```
 
-All three of these function calls match our previous values. We also want to make sure wrapper function works with missing data. We replace two prediction values with NA's like we did previously.
+All three of these function calls match our previous values. We also want to make sure our wrapper function works with missing data. We replace two prediction values with `NA`s like we did previously.
 
 ```{r}
 miss=NA_real_
@@ -258,7 +258,7 @@ str(api_return, max.level=1)    #glimpse of what the API returns#
 
 ### Task 3, Question 2
 
-We can use the `jsonlite` package to convert the JavaScript Object Notation (JSON) data returned by the API into something more easily readable. Upon inspecting the element of our new object `plaintext`, we see that we got 508 articles, which we can access through the third list item, a data frame called `articles`.
+We can use the `jsonlite` package to convert the JavaScript Object Notation (JSON) data returned by the API into something more easily readable. Upon inspecting the element of our new object `plaintext`, we see that we got 512 articles, which we can access through the third list item, a data frame called `articles`.
 
 ```{r}
 library(jsonlite)
@@ -268,7 +268,7 @@ plaintext=fromJSON(rawToChar(api_return$content))
 str(plaintext, max.level=1)
 ```
 
-Summarizing our data frame, we see a few different variables
+Summarizing our data frame, we see a few different variables.
 
 ```{r}
 news_articles=plaintext$articles
@@ -294,7 +294,7 @@ news_articles$content[1]         #Say Hey! RIP to an all-timer. Only Babe is hig
 
 ### Task 3, Question 3
 
-We would not like to write a function that allows us to easily query this API. Putting our previous steps together, we have the below.
+We would now like to write a function that allows us to easily query this API. Putting our previous steps together, we have the below.
 
 ```{r}
 function_api_query=function(subject, time, key) {
@@ -308,7 +308,6 @@ function_api_query=function(subject, time, key) {
   plaintext=fromJSON(rawToChar(api_return$content))
   a=plaintext$articles
   b=a[,c("url", "author", "title", "content")]
-  
   
   return(b)
 }
